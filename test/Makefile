@@ -6,7 +6,7 @@ SIM ?= icarus
 FST ?= -fst # Use more efficient FST format
 TOPLEVEL_LANG ?= verilog
 SRC_DIR = $(PWD)/../src
-PROJECT_SOURCES = project.v
+PROJECT_SOURCES = project.v bf.v spi_ram.v spi_master.v
 
 ifneq ($(GATES),yes)
 
@@ -34,7 +34,8 @@ endif
 # Allow sharing configuration between design and testbench via `include`:
 COMPILE_ARGS 		+= -I$(SRC_DIR)
 
-# Include the testbench sources:
+# Include the testbench sources (mock SPI RAM + testbench):
+VERILOG_SOURCES += $(PWD)/spi_ram_model.v
 VERILOG_SOURCES += $(PWD)/tb.v
 TOPLEVEL = tb
 
