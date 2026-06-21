@@ -34,18 +34,18 @@ reg [3:0]  state_reg, next_state;
 // Hardware Bracket Stack
 
 parameter STACK_DEPTH   = 8;
-parameter NEST_DPETH    = 8;
+parameter NEST_DEPTH    = 8;
 localparam SP_BITS = $clog2(STACK_DEPTH + 1);
 
 reg [15:0] pc_stack [0:STACK_DEPTH-1];
 reg [SP_BITS:0]  sp;
-reg [NEST_DPETH-1:0]  nest_depth;
+reg [NEST_DEPTH-1:0]  nest_depth;
 reg [7:0]  overflow_count; // nesting counter for when stack overflows
 
 // ==============================================================================
 // DATAPATH
 // ==============================================================================
-always @(posedge clk) begin
+always @(posedge clk or posedge rst) begin
     if (rst) begin
         state_reg      <= STATE_IDLE;
         PC             <= 16'h0000;
@@ -53,7 +53,7 @@ always @(posedge clk) begin
         instr_reg      <= 8'd0;
         data_reg       <= 8'd0;
         sp             <= 3'd0;
-        nest_depth     <= 4'd0;
+        nest_depth     <= 8'd0;
         overflow_count <= 8'd0;
     end else begin
         state_reg <= next_state; 
@@ -82,7 +82,7 @@ always @(posedge clk) begin
                 // Stack Operations
                 if (instr_reg == 8'd91) begin // [
                     if (data_reg != 0) begin
-                        if (sp < 3'd4) begin
+                        if (sp < STACK_DEPTH) begin
                             // Push onto stack
                             pc_stack[sp] <= PC;
                             sp <= sp + 1;
@@ -91,7 +91,7 @@ always @(posedge clk) begin
                             overflow_count <= overflow_count + 1;
                         end
                     end else begin
-                        nest_depth <= 4'd1;
+                        nest_depth <= 8'd1;
                     end
                 end
                 
@@ -99,7 +99,7 @@ always @(posedge clk) begin
                     if (data_reg != 0) begin
                         if (overflow_count > 0) begin
                             // Matching '[' is not on the stack
-                            nest_depth <= 4'd1;
+                            nest_depth <= 8'd1;
                             PC <= PC - 2; 
                         end else begin
                             // Hardware stack hit
@@ -128,7 +128,7 @@ always @(posedge clk) begin
                     if (mem_read_data == 8'd93) nest_depth <= nest_depth + 1;
                     else if (mem_read_data == 8'd91) nest_depth <= nest_depth - 1;
 
-                    if (mem_read_data == 8'd91 && nest_depth == 4'd1) begin
+                    if (mem_read_data == 8'd91 && nest_depth == 8'd1) begin
                         PC <= PC + 1; 
                     end else begin
                         PC <= PC - 1;
@@ -201,14 +201,14 @@ always @(*) begin
         STATE_SCAN_FWD: begin
             mem_addr    = PC;
             mem_read_en = 1'b1;
-            if (mem_resp_val && mem_read_data == 8'd93 && nest_depth == 4'd1) 
+            if (mem_resp_val && mem_read_data == 8'd93 && nest_depth == 8'd1) 
                 next_state = STATE_FETCH;
         end
 
         STATE_SCAN_BWD: begin
             mem_addr    = PC;
             mem_read_en = 1'b1;
-            if (mem_resp_val && mem_read_data == 8'd91 && nest_depth == 4'd1) 
+            if (mem_resp_val && mem_read_data == 8'd91 && nest_depth == 8'd1) 
                 next_state = STATE_FETCH;
         end
 
