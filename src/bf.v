@@ -45,7 +45,7 @@ reg [7:0]  overflow_count; // nesting counter for when stack overflows
 // ==============================================================================
 // DATAPATH
 // ==============================================================================
-always @(posedge clk or posedge rst) begin
+always @(posedge clk) begin
     if (rst) begin
         state_reg      <= STATE_IDLE;
         PC             <= 16'h0000;
