@@ -18,9 +18,8 @@ module tb_bf ();
   wire        mem_read_en;
   wire        mem_write_en;
   reg  [7:0]  mem_read_data;
-  reg         mem_ready;
+  reg         mem_resp_val;
 
-  // Instantiate the isolated BF core
   bf uut (
     .clk(clk),
     .rst(rst),
@@ -30,7 +29,7 @@ module tb_bf ();
     .mem_read_en(mem_read_en),
     .mem_write_en(mem_write_en),
     .mem_read_data(mem_read_data),
-    .mem_ready(mem_ready)
+    .mem_resp_val(mem_resp_val)
   );
 
 endmodule
