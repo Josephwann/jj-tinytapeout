@@ -1,0 +1,16 @@
+# Makefile.spi
+# Run with:  make -f Makefile.spi
+SIM ?= icarus
+TOPLEVEL_LANG ?= verilog
+SRC_DIR = $(PWD)/../src
+
+# DUT (spi_master + spi_mem adapter) + mock RAM + testbench
+VERILOG_SOURCES = $(SRC_DIR)/spi_master.v \
+                  $(SRC_DIR)/spi_ram.v \
+                  $(PWD)/spi_ram_model.v \
+                  $(PWD)/tb_spi.v
+
+TOPLEVEL = tb_spi
+MODULE = test_spi
+
+include $(shell cocotb-config --makefiles)/Makefile.sim
