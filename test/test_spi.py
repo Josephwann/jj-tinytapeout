@@ -54,7 +54,7 @@ async def mem_read(dut, addr):
 @cocotb.test()
 async def test_spi_write_then_read(dut):
     """Write a byte over SPI, read it back, compare."""
-    cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
+    cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
     await reset_dut(dut)
     await mem_write(dut, 0x1234, 0xA5)
     got = await mem_read(dut, 0x1234)
@@ -64,7 +64,7 @@ async def test_spi_write_then_read(dut):
 @cocotb.test()
 async def test_spi_multiple_cells(dut):
     """Independent cells across the 16-bit address space must not clobber."""
-    cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
+    cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
     await reset_dut(dut)
     cells = {0x0000: 0x11, 0x0001: 0x22, 0x7FFF: 0x33, 0x8000: 0x44, 0xBEEF: 0x55}
     for addr, val in cells.items():

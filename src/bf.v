@@ -33,18 +33,19 @@ reg [3:0]  state_reg, next_state;
 
 // Hardware Bracket Stack
 
-parameter STACK_DEPTH   = 4;
+parameter STACK_DEPTH   = 8;
+parameter NEST_DPETH    = 8;
 localparam SP_BITS = $clog2(STACK_DEPTH + 1);
 
 reg [15:0] pc_stack [0:STACK_DEPTH-1];
 reg [SP_BITS:0]  sp;
-reg [3:0]  nest_depth;
+reg [NEST_DPETH-1:0]  nest_depth;
 reg [7:0]  overflow_count; // nesting counter for when stack overflows
 
 // ==============================================================================
 // DATAPATH
 // ==============================================================================
-always @(posedge clk or posedge rst) begin
+always @(posedge clk) begin
     if (rst) begin
         state_reg      <= STATE_IDLE;
         PC             <= 16'h0000;
