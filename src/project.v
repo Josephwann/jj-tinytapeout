@@ -17,11 +17,66 @@ module tt_um_joseph_bf (
 );
 
   // All output pins must be assigned. If not used, assign to 0.
-  assign uo_out  = ui_in + uio_in;  // Example: ou_out is the sum of ui_in and uio_in
-  assign uio_out = 0;
-  assign uio_oe  = 0;
+
+  // SPI Pin Mappings
+  wire spi_miso = ui_in[0];
+  wire spi_mosi;
+  wire spi_sck;
+  wire spi_cs_n;
+
+  assign uo_out[0] = spi_mosi;
+  assign uo_out[1] = spi_sck;
+  assign uo_out[2] = spi_cs_n;
+  assign uo_out[7:3] = 5'b0; // Unused
+
+  // Start signal
+  wire start_btn = ui_in[1];
+
+  // Internal Bus Wires
+  wire [15:0] mem_addr;
+  wire [7:0]  mem_write_data;
+  wire [7:0]  mem_read_data;
+  wire        mem_read_en;
+  wire        mem_write_en;
+  wire        mem_ready;
+
+  // BF Core
+  bf bf_core (
+      .clk(clk),
+      .rst(~rst_n),
+      .start(start_btn),
+      
+      .mem_addr(mem_addr),
+      .mem_write_data(mem_write_data),
+      .mem_read_en(mem_read_en),
+      .mem_write_en(mem_write_en),
+      .mem_read_data(mem_read_data),
+      .mem_ready(mem_ready)
+  );
+
+  //  SPI RAM (connects to SPI master)
+  spi_ram memory_bus (
+      .clk(clk),
+      .rst(~rst_n),
+      
+      // convert core's memory requests to SPI
+      .mem_addr(mem_addr),
+      .mem_write_data(mem_write_data),
+      .mem_read_en(mem_read_en),
+      .mem_write_en(mem_write_en),
+      .mem_read_data(mem_read_data),
+      .mem_ready(mem_ready),
+      
+      .spi_miso(spi_miso),
+      .spi_mosi(spi_mosi),
+      .spi_sck(spi_sck),
+      .spi_cs_n(spi_cs_n)
+  );
+
+  assign uio_out = 8'b0;
+  assign uio_oe  = 8'b0;
 
   // List all unused inputs to prevent warnings
-  wire _unused = &{ena, clk, rst_n, 1'b0};
+  wire _unused = &{ena, ui_in[7:2], uio_in};
 
 endmodule
