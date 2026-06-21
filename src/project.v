@@ -90,7 +90,7 @@ module tt_um_joseph_bf (
 
   // '.' latches uo_out + pulses out_valid; ',' waits for in_valid then returns
   // ui_in + pulses in_ack. bf stalls on ',' until input is ready.
-  always @(posedge clk) begin
+  always @(posedge clk or posedge rst) begin
     if (rst) begin
       out_reg   <= 8'd0;
       out_valid <= 1'b0;

@@ -44,14 +44,15 @@ module spi_master #(
 
     // ---- SCLK divider ----
     localparam DIVW = (CLK_DIV <= 2) ? 1 : $clog2(CLK_DIV);
+    localparam [DIVW-1:0] DIV_MAX = DIVW'(CLK_DIV - 1);   // width-matched compare value
     reg [DIVW-1:0] div_cnt;
-    wire half_period_done = (div_cnt == CLK_DIV - 1);
+    wire half_period_done = (div_cnt == DIV_MAX);
 
     assign spi_mosi = shift_out[31];
 
     assign req_rdy = (state == ST_IDLE);
 
-    always @(posedge clk) begin
+    always @(posedge clk or posedge rst) begin
         if (rst) begin
             state      <= ST_IDLE;
             spi_cs_n   <= 1'b1;
