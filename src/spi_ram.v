@@ -62,7 +62,7 @@ module spi_ram #(
     // -------------------------------------------------------------------------
     // Busy tracking
     // -------------------------------------------------------------------------
-    always @(posedge clk or posedge rst) begin
+    always @(posedge clk) begin
         if (rst)
             busy <= 1'b0;
         else if (req_fire & spi_req_rdy)
