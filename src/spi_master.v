@@ -5,7 +5,11 @@
 `default_nettype none
 
 module spi_master #(
-    parameter CLK_DIV = 4
+    parameter CLK_DIV        = 4,
+    // CS must stay de-asserted between frames. The RP2040 spi-ram-emu needs
+    // CS high ~400 ns (~50 SYS clocks) between operations; hold it high for
+    // this many TT clocks so the requirement is met at the operating frequency.
+    parameter CS_HIGH_CYCLES = 32
 ) (
     input  wire        clk,
     input  wire        rst,
@@ -35,7 +39,12 @@ module spi_master #(
     localparam ST_IDLE = 2'd0;
     localparam ST_XFER = 2'd1;
     localparam ST_DONE = 2'd2;
+    localparam ST_WAIT = 2'd3;   // CS-high recovery before the next frame
     reg [1:0] state;
+
+    // ---- CS-high recovery counter ----
+    localparam CSW = (CS_HIGH_CYCLES <= 1) ? 1 : $clog2(CS_HIGH_CYCLES);
+    reg [CSW-1:0] cs_wait;
 
     // ---- Datapath registers ----
     reg [31:0] shift_out;
@@ -52,7 +61,7 @@ module spi_master #(
 
     assign req_rdy = (state == ST_IDLE);
 
-    always @(posedge clk or posedge rst) begin
+    always @(posedge clk) begin
         if (rst) begin
             state      <= ST_IDLE;
             spi_cs_n   <= 1'b1;
@@ -63,6 +72,7 @@ module spi_master #(
             shift_in   <= 8'h0;
             bit_idx    <= 6'd0;
             div_cnt    <= {DIVW{1'b0}};
+            cs_wait    <= {CSW{1'b0}};
         end else begin
             resp_val <= 1'b0;
 
@@ -108,7 +118,22 @@ module spi_master #(
                     resp_val   <= 1'b1;
                     resp_rdata <= shift_in;
                     spi_sclk   <= 1'b0;
-                    state      <= ST_IDLE;
+                    spi_cs_n   <= 1'b1;                    // keep CS de-asserted
+                    cs_wait    <= CSW'(CS_HIGH_CYCLES - 1);
+                    state      <= ST_WAIT;
+                end
+
+                // ---------------------------------------------------------
+                // Hold CS high long enough for the RP2040 to recover before
+                // the next frame. req_rdy stays low (state != ST_IDLE), so a
+                // pending request is held until recovery completes.
+                ST_WAIT: begin
+                    spi_cs_n <= 1'b1;
+                    spi_sclk <= 1'b0;
+                    if (cs_wait == {CSW{1'b0}})
+                        state <= ST_IDLE;
+                    else
+                        cs_wait <= cs_wait - 1'b1;
                 end
 
                 default: state <= ST_IDLE;

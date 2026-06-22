@@ -49,7 +49,7 @@ wire [IDX_BITS-1:0] sp_pop_idx = sp_idx - 1'b1;
 // ==============================================================================
 // DATAPATH
 // ==============================================================================
-always @(posedge clk or posedge rst) begin
+always @(posedge clk) begin
     if (rst) begin
         state_reg      <= STATE_IDLE;
         PC             <= 16'h0000;

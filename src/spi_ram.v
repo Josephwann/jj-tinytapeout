@@ -5,7 +5,8 @@
 `default_nettype none
 
 module spi_ram #(
-    parameter CLK_DIV = 4 
+    parameter CLK_DIV        = 4,
+    parameter CS_HIGH_CYCLES = 32
 ) (
     input  wire        clk,
     input  wire        rst,
@@ -40,7 +41,8 @@ module spi_ram #(
     // SPI engine
     // -------------------------------------------------------------------------
     spi_master #(
-        .CLK_DIV (CLK_DIV)
+        .CLK_DIV        (CLK_DIV),
+        .CS_HIGH_CYCLES (CS_HIGH_CYCLES)
     ) u_spi_master (
         .clk        (clk),
         .rst        (rst),
@@ -60,7 +62,7 @@ module spi_ram #(
     // -------------------------------------------------------------------------
     // Busy tracking
     // -------------------------------------------------------------------------
-    always @(posedge clk or posedge rst) begin
+    always @(posedge clk) begin
         if (rst)
             busy <= 1'b0;
         else if (req_fire & spi_req_rdy)
