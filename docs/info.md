@@ -7,6 +7,9 @@ You can also include images in this folder and reference them in the markdown. E
 512 kb in size, and the combined size of all images must be less than 1 MB.
 -->
 
+## Block diagram
+![BF Block Diagram](BF_block_diagram.png)
+
 ## How it works
 
 This is a multicycle CPU that runs programs written in the [BF](https://en.wikipedia.org/wiki/Brainfuck)
@@ -27,8 +30,7 @@ Blocks:
 
 ## How to test
 
-1. Connect the SPI pins (`uio[0..3]`) to an RP2040 running `spi-ram-emu` (or any 23LC512-compatible SPI RAM),
-   which provides the 64 KB memory.
+1. Connect the SPI pins (`uio[0..3]`) to an RP2040 running `spi-ram-emu`, which provides the 64 KB memory.
 2. Load a BF program into instruction memory starting at address `0x0000`.
 3. Hold `rst_n` low to reset, release it, then pulse **`start`** (`uio[4]`) high for at least one cycle.
 4. The core runs the program, fetching instructions and operating on data entirely over SPI.
@@ -38,4 +40,4 @@ The repo's cocotb tests verify the design at multiple levels: the SPI master (`M
 ## External hardware
 
 An RP2040 (e.g. the Tiny Tapeout demo board) running `spi-ram-emu` to provide 64 KB of SPI RAM connected to
-`uio[0..3]`, or any 23LC512-compatible SPI SRAM module.
+`uio[0..3]`.
