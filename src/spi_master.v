@@ -1,14 +1,11 @@
-/*
- * spi_master.v
- */
+// =============================================================================
+// spi_master.v
+// =============================================================================
 
 `default_nettype none
 
 module spi_master #(
     parameter CLK_DIV        = 4,
-    // CS must stay de-asserted between frames. The RP2040 spi-ram-emu needs
-    // CS high ~400 ns (~50 SYS clocks) between operations; hold it high for
-    // this many TT clocks so the requirement is met at the operating frequency.
     parameter CS_HIGH_CYCLES = 32
 ) (
     input  wire        clk,

@@ -1,7 +1,12 @@
-/*
- * Copyright (c) 2024 Your Name
- * SPDX-License-Identifier: Apache-2.0
- */
+// =============================================================================
+// project.v  --  Top-level Tiny Tapeout module for BF interpreter
+// =============================================================================
+//
+// Instantiates the BF FSM core, SPI RAM adapter, and SPI master to enable
+// the chip to fetch and execute BF programs from external SPI SRAM.
+//
+// Copyright (c) 2024 Joseph Wan & Joseph Mensah
+// SPDX-License-Identifier: Apache-2.0
 
 `default_nettype none
 
