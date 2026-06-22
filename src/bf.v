@@ -36,23 +36,27 @@ reg [3:0]  state_reg, next_state;
 parameter STACK_DEPTH   = 8;
 parameter NEST_DEPTH    = 8;
 localparam SP_BITS = $clog2(STACK_DEPTH + 1);
+localparam IDX_BITS = $clog2(STACK_DEPTH);
 
 reg [15:0] pc_stack [0:STACK_DEPTH-1];
-reg [SP_BITS:0]  sp;
+reg [SP_BITS-1:0]  sp;
 reg [NEST_DEPTH-1:0]  nest_depth;
-reg [7:0]  overflow_count; // nesting counter for when stack overflows
+reg [7:0]  overflow_count; // for when stack overflows
+
+wire [IDX_BITS-1:0] sp_idx = sp[IDX_BITS-1:0];
+wire [IDX_BITS-1:0] sp_pop_idx = sp_idx - 1'b1;
 
 // ==============================================================================
 // DATAPATH
 // ==============================================================================
-always @(posedge clk) begin
+always @(posedge clk or posedge rst) begin
     if (rst) begin
         state_reg      <= STATE_IDLE;
         PC             <= 16'h0000;
         DP             <= 16'h8000;
         instr_reg      <= 8'd0;
         data_reg       <= 8'd0;
-        sp             <= 3'd0;
+        sp             <= 0;
         nest_depth     <= 8'd0;
         overflow_count <= 8'd0;
     end else begin
@@ -84,7 +88,7 @@ always @(posedge clk) begin
                     if (data_reg != 0) begin
                         if (sp < STACK_DEPTH) begin
                             // Push onto stack
-                            pc_stack[sp] <= PC;
+                            pc_stack[sp_idx] <= PC;
                             sp <= sp + 1;
                         end else begin
                             // Stack is full
@@ -103,7 +107,7 @@ always @(posedge clk) begin
                             PC <= PC - 2; 
                         end else begin
                             // Hardware stack hit
-                            PC <= pc_stack[sp - 1]; 
+                            PC <= pc_stack[sp_pop_idx]; 
                         end
                     end else begin
                         if (overflow_count > 0) begin
@@ -137,6 +141,7 @@ always @(posedge clk) begin
             end
             
             // STATE_DATA_WRITE and STATE_IO_WRITE only drive outputs
+            default: ;
         endcase
     end
 end
@@ -224,6 +229,8 @@ always @(*) begin
             mem_write_en   = 1'b1;
             if (mem_resp_val) next_state = STATE_FETCH;
         end
+
+        default: next_state = STATE_IDLE;
     endcase
 end
 
