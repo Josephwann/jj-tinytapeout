@@ -61,7 +61,7 @@ module spi_master #(
 
     assign req_rdy = (state == ST_IDLE);
 
-    always @(posedge clk) begin
+    always @(posedge clk or posedge rst) begin
         if (rst) begin
             state      <= ST_IDLE;
             spi_cs_n   <= 1'b1;
