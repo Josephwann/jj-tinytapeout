@@ -33,7 +33,7 @@ reg [3:0]  state_reg, next_state;
 
 // Hardware Bracket Stack
 
-parameter STACK_DEPTH   = 8;
+parameter STACK_DEPTH   = 6;
 parameter NEST_DEPTH    = 8;
 localparam SP_BITS = $clog2(STACK_DEPTH + 1);
 localparam IDX_BITS = $clog2(STACK_DEPTH);
